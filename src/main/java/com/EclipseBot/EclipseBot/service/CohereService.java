@@ -1,5 +1,7 @@
 package com.EclipseBot.EclipseBot.service;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -13,56 +15,82 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class CohereService {
 
-    private final RestTemplate restTemplate;
-
-    private static final String SAVAGE_PROMPT =
-        """
-        You are a savage Discord chatbot.
-        You roast users in a funny way but NEVER be abusive, hateful, or unsafe.
-        Keep replies under 2–3 sentences max.
-        Be witty, sarcastic, and slightly chaotic.
-        No long explanations.
-        
-        User message:
-        """;
-
     @Value("${cohere.api.key}")
     private String apiKey;
 
-    public CohereService(RestTemplate restTemplate) {
-        this.restTemplate = restTemplate;
-    }
+    private final RestTemplate restTemplate = new RestTemplate();
 
-    public String getResponse(String message) {
-
-        String url = "https://api.cohere.ai/v1/chat";
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(apiKey);
-
-        Map<String, Object> body = Map.of(
-        "model", "command",
-        "message", SAVAGE_PROMPT + message
-        );
-
-        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+    public String getResponse(String prompt) {
 
         try {
-            ResponseEntity<Map> response = restTemplate.postForEntity(
-                    url,
-                    request,
-                    Map.class
-            );
 
-            Map<?, ?> responseBody = response.getBody();
+            String url = "https://api.cohere.com/v2/chat";
 
-            if (responseBody == null || !responseBody.containsKey("text")) {
-                return "AI error 💀";
+            HttpHeaders headers = new HttpHeaders();
+
+            headers.setBearerAuth(apiKey);
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            Map<String, Object> body = new HashMap<>();
+
+            body.put("model", "command-a-plus-05-2026");
+
+            List<Map<String, String>> messages = List.of(
+                    Map.of(
+                            "role", "user",
+                            "content",
+                            """
+                            You are a Discord bot.
+
+                            Rules:
+                            - NEVER output reasoning or thinking
+                            - ONLY output final message
+                            - Be sarcastic and funny
+                            - Keep responses under 2 sentences
+
+                            User:%s
+                            """.formatted(prompt)));
+
+            body.put("messages", messages);
+
+            HttpEntity<Map<String, Object>> entity =
+                    new HttpEntity<>(body, headers);
+
+            ResponseEntity<Map> response =
+                    restTemplate.postForEntity(url, entity, Map.class);
+
+           Map responseBody = response.getBody();
+
+            System.out.println(responseBody);
+
+            Map<String, Object> message =
+                    (Map<String, Object>) responseBody.get("message");
+
+            if (message == null) {
+                return "No message returned 💀";
             }
 
-            return responseBody.get("text").toString();
+            List<Map<String, Object>> content =
+                    (List<Map<String, Object>>) message.get("content");
 
+            if (content == null || content.isEmpty()) {
+                return "Empty AI response 💀";
+            }
+
+            String text = null;
+
+            for (Map<String, Object> part : content) {
+                if ("text".equals(part.get("type"))) {
+                    text = part.get("text").toString();
+                    break;
+                }
+            }
+
+            if (text == null) {
+                return "No text field in response 💀";
+            }
+
+            return text.toString();
         } catch (Exception e) {
             e.printStackTrace();
             return "AI request failed 💀";

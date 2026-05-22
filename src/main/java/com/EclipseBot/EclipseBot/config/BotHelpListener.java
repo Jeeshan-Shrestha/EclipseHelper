@@ -3,9 +3,10 @@ package com.EclipseBot.EclipseBot.config;
 import org.springframework.stereotype.Component;
 
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 @Component
-public class BotHelpListener extends BotEventListener {
+public class BotHelpListener extends ListenerAdapter {
     
         @Override
         public void onMessageReceived(MessageReceivedEvent event) {
