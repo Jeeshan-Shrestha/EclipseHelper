@@ -20,7 +20,7 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 @Component
 public class BotEventListener extends ListenerAdapter {
 
-    private final Path path = Paths.get(System.getProperty("user.dir"), "data", "replies.txt");
+    private final Path path = Paths.get("replies.txt");
     final List<String> savageReplies = new ArrayList<>();
 
     @PostConstruct
