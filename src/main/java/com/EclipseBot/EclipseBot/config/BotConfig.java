@@ -10,22 +10,37 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 @Configuration
 public class BotConfig {
 
+    @Bean
+    public DailyPingScheduler dailyPingScheduler() {
+        return new DailyPingScheduler();
+    }
+
     @org.springframework.beans.factory.annotation.Value("${discord.bot.token}")
     private String token;   
 
     private final BotEventListener botEventListener;
+    private final AfkCommand afkCommand;
 
-    public BotConfig(BotEventListener botEventListener) {
+    public BotConfig(BotEventListener botEventListener, AfkCommand afkCommand) {
         this.botEventListener = botEventListener;
+        this.afkCommand = afkCommand;
     }
+    
     @Bean
-    public JDA jda() throws Exception {
-        return JDABuilder.createDefault(token
-            ,GatewayIntent.GUILD_MESSAGES,
-            GatewayIntent.MESSAGE_CONTENT
-        )
-        .addEventListeners(botEventListener)
-        .build().awaitReady();
+    public JDA jda(DailyPingScheduler scheduler) throws Exception {
+
+        JDA jda = JDABuilder.createDefault(token,
+                GatewayIntent.GUILD_MESSAGES,
+                GatewayIntent.MESSAGE_CONTENT,
+                GatewayIntent.GUILD_VOICE_STATES
+            )
+            .addEventListeners(botEventListener, afkCommand)
+            .build()
+            .awaitReady();
+
+        scheduler.start(jda);
+
+        return jda;
     }
 
 
