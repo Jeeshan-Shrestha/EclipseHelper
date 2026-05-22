@@ -1,6 +1,5 @@
 package com.EclipseBot.EclipseBot.config;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -16,6 +15,7 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.utils.FileUpload;
 
 @Component
 public class BotEventListener extends ListenerAdapter {
@@ -99,21 +99,52 @@ public class BotEventListener extends ListenerAdapter {
 
         if (content.startsWith("!removereply ")) {
 
-            if (!event.getMember().hasPermission(Permission.ADMINISTRATOR)) return;
-
-            int index = Integer.parseInt(content.split(" ")[1]);
-
-            if (index >= 0 && index < savageReplies.size()) {
-                savageReplies.remove(index);
+            if (!event.getMember().hasPermission(Permission.ADMINISTRATOR)) {
+                event.getChannel().sendMessage("You are not an admin.").queue();
+                return;
             }
 
             try {
-                Files.write(path, savageReplies);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+                int index = Integer.parseInt(content.split(" ")[1]);
 
-            event.getChannel().sendMessage("Removed reply at index " + index).queue();
+                if (index < 0 || index >= savageReplies.size()) {
+                    event.getChannel().sendMessage("Invalid index.").queue();
+                    return;
+                }
+
+                String removed = savageReplies.remove(index);
+
+                Files.write(path, savageReplies);
+
+                event.getChannel().sendMessage("Removed: " + removed).queue();
+
+            } catch (Exception e) {
+                event.getChannel().sendMessage("Usage: !removereply <index>").queue();
+            }
+        }
+
+        if (content.equalsIgnoreCase("!listreplies")) {
+
+            try {
+                List<String> lines = Files.readAllLines(path);
+
+                List<String> numbered = new ArrayList<>();
+
+                for (int i = 0; i < lines.size(); i++) {
+                    numbered.add(i + ": " + lines.get(i));
+                }
+
+                Path tempFile = Paths.get("replies_numbered.txt");
+                Files.write(tempFile, numbered);
+
+                event.getChannel()
+                    .sendFiles(FileUpload.fromData(tempFile.toFile(), "replies_numbered.txt"))
+                    .queue();
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                event.getChannel().sendMessage("Failed to generate file.").queue();
+            }
         }
 
         
