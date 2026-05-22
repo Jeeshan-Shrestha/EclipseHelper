@@ -26,14 +26,15 @@ public class BotEventListener extends ListenerAdapter {
     @PostConstruct
     public void loadReplies() {
         try {
+
+            System.out.println("Working dir: " + System.getProperty("user.dir"));
+            System.out.println("File path: " + path.toAbsolutePath());
+
             if (!Files.exists(path)) {
-                Files.createDirectories(path.getParent());
                 Files.createFile(path);
             }
 
             savageReplies.clear();
-            System.out.println("Loaded file path: " + path.toAbsolutePath());
-            System.out.println("Lines loaded: " + savageReplies.size());
             savageReplies.addAll(Files.readAllLines(path));
 
             System.out.println("Loaded replies: " + savageReplies.size());
