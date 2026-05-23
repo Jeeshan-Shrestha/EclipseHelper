@@ -21,11 +21,13 @@ public class BotConfig {
     private final BotEventListener botEventListener;
     private final AfkCommand afkCommand;
     private final BotHelpListener botHelpListener;
+    private final SpamPingLuffy spamPingLuffy;
 
-    public BotConfig(BotEventListener botEventListener, AfkCommand afkCommand, BotHelpListener botHelpListener) {
+    public BotConfig(BotEventListener botEventListener, AfkCommand afkCommand, BotHelpListener botHelpListener, SpamPingLuffy spamPingLuffy) {
         this.botEventListener = botEventListener;
         this.afkCommand = afkCommand;
         this.botHelpListener = botHelpListener;
+        this.spamPingLuffy = spamPingLuffy;
     }
     
     @Bean
@@ -36,7 +38,7 @@ public class BotConfig {
                 GatewayIntent.MESSAGE_CONTENT,
                 GatewayIntent.GUILD_VOICE_STATES
             )
-            .addEventListeners(botEventListener, afkCommand, botHelpListener)
+            .addEventListeners(botEventListener, afkCommand, botHelpListener, spamPingLuffy)
             .build()
             .awaitReady();
 
