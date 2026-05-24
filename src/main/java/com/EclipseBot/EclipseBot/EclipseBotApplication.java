@@ -8,7 +8,6 @@ public class EclipseBotApplication {
 
 	public static void main(String[] args) throws InterruptedException {
 		SpringApplication.run(EclipseBotApplication.class, args);
-		
 	}
 
 }

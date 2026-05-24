@@ -1,8 +1,9 @@
 package com.EclipseBot.EclipseBot.config;
 
 import java.time.Duration;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -46,12 +47,10 @@ public class DailyPingScheduler {
     }
 
     private long getInitialDelay() {
+        ZoneId zone = ZoneId.of("Asia/Kathmandu");
+        ZonedDateTime now = ZonedDateTime.now(zone);
+        ZonedDateTime nextRun = now.with(LocalTime.of(20, 0, 0));
 
-        LocalDateTime now = LocalDateTime.now();
-            // LocalDateTime nextRun = now.plusMinutes(1);
-        LocalDateTime nextRun = now.with(LocalTime.of(20, 0, 0));
-
-        // if it's already past 8PM today
         if (now.compareTo(nextRun) >= 0) {
             nextRun = nextRun.plusDays(1);
         }
